@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"embed"
+	"io"
+	"path"
+
 	"fmt"
 	"log"
 	"math/rand"
 	"os"
-	"path"
 	"time"
 
 	"github.com/faiface/beep"
@@ -18,6 +22,9 @@ import (
 
 var periodTime int
 var breakTime int
+
+//go:embed mp3/*.mp3
+var mp3Files embed.FS
 
 func init() {
 	pflag.IntVarP(&periodTime, "period", "p", 60, "define period time.(per min)")
@@ -68,17 +75,16 @@ func main() {
 }
 
 func playBeep(fs string) error {
-	// TODO: 内嵌mp3文件
 	fs = path.Join("mp3", fs)
 
-	f, err := os.Open(fs)
+	data, err := mp3Files.ReadFile(fs)
 	if err != nil {
 		return fmt.Errorf("open beep file error: %s", err)
 	}
 
-	streamer, format, err := mp3.Decode(f)
+	streamer, format, err := mp3.Decode(io.NopCloser(bytes.NewReader(data)))
 	if err != nil {
-		return fmt.Errorf("decode beep file error: %s", err)
+		return fmt.Errorf("decode error: %s", err)
 	}
 	defer streamer.Close()
 
