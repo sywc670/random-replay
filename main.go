@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"fmt"
 	"io"
 	"path"
 
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -35,15 +35,15 @@ func main() {
 	pflag.Parse()
 
 	if periodTime < 0 || breakTime < 0 {
-		fmt.Println("参数不允许取当前值")
+		log.Println("参数不允许取当前值")
 		os.Exit(1)
 	}
 	for {
-		fmt.Println("周期开始")
+		log.Println("周期开始")
 		// 周期开始提示音
 		err := playBeep("start.mp3")
 		if err != nil {
-			fmt.Printf("%s\n", err)
+			log.Printf("%s\n", err)
 			os.Exit(1)
 		}
 
@@ -56,21 +56,21 @@ func main() {
 		time.Sleep(time.Minute * time.Duration(periodTime))
 
 		// 结束协程
-		fmt.Println("发出终止信号")
+		log.Println("发出终止信号")
 		cancel()
 
 		// 周期结束提示音
-		fmt.Println("周期结束")
+		log.Println("周期结束")
 		err = playBeep("finish.mp3")
 		if err != nil {
-			fmt.Printf("%s\n", err)
+			log.Printf("%s\n", err)
 			os.Exit(1)
 		}
 
 		// 等待休息完成
 		log.Printf("还有%d分钟", breakTime)
 		time.Sleep(time.Minute * time.Duration(breakTime))
-		fmt.Println("休息完毕")
+		log.Println("休息完毕")
 	}
 }
 
@@ -117,7 +117,7 @@ func randomReplay(ctx context.Context) {
 		for range randomSecond {
 			select {
 			case <-ctx.Done():
-				fmt.Println("协程终止")
+				log.Println("协程终止")
 				return
 			default:
 				time.Sleep(time.Second)
@@ -125,17 +125,17 @@ func randomReplay(ctx context.Context) {
 		}
 
 		// 播放休息提示音
-		fmt.Println("休息十秒钟")
+		log.Println("休息十秒钟")
 		err := playBeep("replay.mp3")
 		if err != nil {
-			fmt.Printf("%s\n", err)
+			log.Printf("%s\n", err)
 			os.Exit(1)
 		}
 
 		for range 10 {
 			select {
 			case <-ctx.Done():
-				fmt.Println("协程终止")
+				log.Println("协程终止")
 				return
 			default:
 				time.Sleep(time.Second)
@@ -143,10 +143,10 @@ func randomReplay(ctx context.Context) {
 		}
 
 		// 播放休息结束提示音
-		fmt.Println("结束十秒休息")
+		log.Println("结束十秒休息")
 		err = playBeep("start.mp3")
 		if err != nil {
-			fmt.Printf("%s\n", err)
+			log.Printf("%s\n", err)
 			os.Exit(1)
 		}
 	}
