@@ -27,7 +27,7 @@ var breakTime int
 var mp3Files embed.FS
 
 func init() {
-	pflag.IntVarP(&periodTime, "period", "p", 60, "define period time.(per min)")
+	pflag.IntVarP(&periodTime, "period", "p", 90, "define period time.(per min)")
 	pflag.IntVarP(&breakTime, "break", "b", 20, "define break time.(per min)")
 }
 
@@ -97,7 +97,7 @@ func playBeep(fs string) error {
 	volume := &effects.Volume{
 		Streamer: streamer,
 		Base:     2,
-		Volume:   -2, // 分贝（负数为降低音量）
+		Volume:   -3, // 分贝（负数为降低音量）
 		Silent:   false,
 	}
 
