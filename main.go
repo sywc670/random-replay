@@ -20,15 +20,21 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var periodTime int
-var breakTime int
+var (
+	periodTime int
+	breakTime  int
+	randLower  int
+	randUpper  int
+)
 
 //go:embed mp3/*.mp3
 var mp3Files embed.FS
 
 func init() {
-	pflag.IntVarP(&periodTime, "period", "p", 90, "define period time.(per min)")
-	pflag.IntVarP(&breakTime, "break", "b", 20, "define break time.(per min)")
+	pflag.IntVarP(&periodTime, "period", "p", 90, "define period time.(in min)")
+	pflag.IntVarP(&breakTime, "break", "b", 20, "define break time.(in min)")
+	pflag.IntVarP(&randUpper, "upper", "u", 5, "define replay upper time.(in min)")
+	pflag.IntVarP(&randLower, "lower", "l", 3, "define replay lower time.(in min)")
 }
 
 func main() {
@@ -111,7 +117,8 @@ func playBeep(fs string) error {
 
 func randomReplay(ctx context.Context) {
 	for {
-		randomSecond := rand.Intn(121) + 180 // 3-5分钟随机，单位秒
+		fmt.Printf("将在%d到%d分钟区间内得到下一次休息\n", randLower, randUpper)
+		randomSecond := rand.Intn((randUpper-randLower)*60+1) + randLower*60 // 3-5分钟随机，单位秒
 
 		// 每次sleep一秒，监听是否被终止
 		for range randomSecond {
@@ -125,7 +132,7 @@ func randomReplay(ctx context.Context) {
 		}
 
 		// 播放休息提示音
-		log.Println("休息十秒钟")
+		log.Println("休息十秒钟，可以深呼吸或者闭眼")
 		err := playBeep("replay.mp3")
 		if err != nil {
 			log.Printf("%s\n", err)
