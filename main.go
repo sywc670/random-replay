@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"embed"
 	"fmt"
 	"io"
 	"path"
+	"strconv"
+	"strings"
 
 	"log"
 	"math/rand"
@@ -33,8 +36,8 @@ var mp3Files embed.FS
 func init() {
 	pflag.IntVarP(&periodTime, "period", "p", 90, "define period time.(in min)")
 	pflag.IntVarP(&breakTime, "break", "b", 20, "define break time.(in min)")
-	pflag.IntVarP(&randUpper, "upper", "u", 5, "define replay upper time.(in min)")
-	pflag.IntVarP(&randLower, "lower", "l", 3, "define replay lower time.(in min)")
+	pflag.IntVarP(&randUpper, "upper", "u", 7, "define replay upper time.(in min)")
+	pflag.IntVarP(&randLower, "lower", "l", 5, "define replay lower time.(in min)")
 }
 
 func main() {
@@ -44,6 +47,29 @@ func main() {
 		log.Println("参数不允许取当前值")
 		os.Exit(1)
 	}
+
+	go func() {
+		for {
+			var err error
+			input := bufio.NewReader(os.Stdin)
+			str, _ := input.ReadString('\n')
+			bounds := strings.Fields(str)
+			if len(bounds) != 2 {
+				log.Println("输入格式错误")
+				continue
+			}
+			randLower, err = strconv.Atoi(bounds[0])
+			if err != nil {
+				log.Println("输入格式错误")
+				continue
+			}
+			randUpper, err = strconv.Atoi(bounds[1])
+			if err != nil {
+				log.Println("输入格式错误")
+				continue
+			}
+		}
+	}()
 	for {
 		log.Println("周期开始")
 		// 周期开始提示音
@@ -103,7 +129,7 @@ func playBeep(fs string) error {
 	volume := &effects.Volume{
 		Streamer: streamer,
 		Base:     2,
-		Volume:   -3, // 分贝（负数为降低音量）
+		Volume:   -2, // 分贝（负数为降低音量）
 		Silent:   false,
 	}
 
@@ -132,14 +158,14 @@ func randomReplay(ctx context.Context) {
 		}
 
 		// 播放休息提示音
-		log.Println("休息十秒钟，可以深呼吸或者闭眼")
+		log.Println("休息一下，可以深呼吸或者闭眼")
 		err := playBeep("replay.mp3")
 		if err != nil {
 			log.Printf("%s\n", err)
 			os.Exit(1)
 		}
 
-		for range 10 {
+		for range 12 {
 			select {
 			case <-ctx.Done():
 				log.Println("协程终止")
@@ -150,7 +176,7 @@ func randomReplay(ctx context.Context) {
 		}
 
 		// 播放休息结束提示音
-		log.Println("结束十秒休息")
+		log.Println("结束休息")
 		err = playBeep("start.mp3")
 		if err != nil {
 			log.Printf("%s\n", err)
